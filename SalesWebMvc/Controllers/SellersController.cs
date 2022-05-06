@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using SalesWebMvc.Services;
 using SalesWebMvc.Models;
 using SalesWebMvc.Models.ViewModels;
+using SalesWebMvc.Services.Exeptions;
 
 namespace SalesWebMvc.Controllers
 {
@@ -98,6 +99,30 @@ namespace SalesWebMvc.Controllers
             SellerFormViewModel viewModel = new SellerFormViewModel { Seller = obj, Departments = departments };
 
             return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(int id, Seller seller)
+        {
+            if (id != seller.Id)
+            {
+                return BadRequest();
+            }
+            try
+            {
+                _sellerServices.Update(seller);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (NotFoundExcepion e)
+            {
+                return NotFound();
+            }
+            catch (DbConcurrencyExeption e)
+            {
+                return BadRequest();
+            }
+
         }
     }
 }
